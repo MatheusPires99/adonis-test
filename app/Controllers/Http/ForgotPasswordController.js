@@ -1,6 +1,7 @@
 'use strict'
 
 const crypto = require('crypto');
+const moment = require('moment');
 
 /** @type {typeof import('@adonisjs/lucid/src/Lucid/Model')} */
 const User = use('App/Models/User');
@@ -12,7 +13,7 @@ class ForgotPasswordController {
     const user = await User.findBy('email', email);
 
     if (!user) {
-      return response.status(400).send({ error: { message: 'User not found' } });
+      return response.status(401).send({ error: { message: 'User not found' } });
     }
 
     user.token = crypto.randomBytes(10).toString('hex');
@@ -34,6 +35,29 @@ class ForgotPasswordController {
           .subject('Recuperação de senha')
       }
     )
+  }
+
+  async update({ request, response }) {
+    const { token, password } = request.all();
+
+    const user = await User.findBy('token', token);
+
+    if (!user) {
+      return response.status(401).send({ error: { message: 'User not found' } });
+    }
+
+    const tokenExpired = moment().subtract('2', 'days').isAfter(user.token_created_at);
+
+    if (tokenExpired) {
+      return response.status(401).send({ error: { message: 'Reset token expired' } });
+    }
+
+    user.token = null;
+    user.token_created_at = null;
+
+    user.password = password;
+
+    await user.save();
   }
 }
 
