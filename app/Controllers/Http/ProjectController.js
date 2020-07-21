@@ -1,7 +1,6 @@
 'use strict'
 
 const Project = use('App/Models/Project');
-const Task = use('App/Models/Task');
 
 class ProjectController {
   async index ({ request }) {
