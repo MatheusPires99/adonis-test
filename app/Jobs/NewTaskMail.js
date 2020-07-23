@@ -13,8 +13,6 @@ class NewTaskMail {
   }
 
   async handle ({ email, username, title, file }) {
-    console.log(`JOB: ${NewTaskMail.key}`)
-
     await Mail.send(
       ['emails.new_task'],
       { username, title, hasAttachment: !!file },
